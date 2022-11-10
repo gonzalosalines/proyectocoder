@@ -1,0 +1,11 @@
+{% extends 'appcoder/base.html' %}
+
+{% block contenido %}
+<form action="POST">
+{% csrf_token %}
+{{ formulario.as_table }}
+
+<input type="submit" value="Cargar profesor">
+
+</form>
+{% endblock %}
