@@ -1,29 +1,73 @@
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from appcoder.models import Curso  #Importamos la clase q vamos a trabar en este form
 from appcoder.models import Profesor, Estudiante
-from appcoder.forms import ProfesorFormulario, EstudianteFormulario
+from appcoder.forms import ProfesorFormulario, EstudianteFormulario, CursoFormulario
 # Create your views here.
 
 def inicio(request):
     return render(request, "appcoder/index.html")
 
 def cursos(request):
-    #obtenemos el listado de objetos en la base de datos
-    # curso = Curso.objects.all()
 
-    # for curso in Curso:
-    #     print(curso.nombre)
+    errores= ""
+    if request.method == "POST":
+        formulario = CursoFormulario(request.POST)
 
-    return render(request, "appcoder/cursos.html")
+        if formulario.is_valid():
+            data =formulario.cleaned_data
+            curso = Curso(nombre=data["nombre"], camada=data["camada"])
+            curso.save()
+        else:
+
+            errores = formulario.errors
+
+
+    cursos =Curso.objects.all() #obtener todo los registros del modelo
+    formulario = CursoFormulario
+    contexto = {"listado_cursos": cursos, "formulario": formulario, "errores": errores}
+
+    return render(request, "appcoder/cursos.html",contexto)
+
+def editar_curso(request, id):
+    curso = Curso.objects.get(id=id)
+
+    if request.method == "POST":
+        formulario = CursoFormulario(request.POST)
+
+        if formulario.is_valid():
+            data = formulario.cleaned_data
+
+            curso.nombre = data["nombre"]
+            curso.camada = data["camada"]
+            curso.save()
+            return redirect("coder-cursos")
+        else:
+            return render(request, "appcoder/editar_curso.html", {"formulario": formulario, "errores": formulario.errors})    
+
+    else:
+        formulario = CursoFormulario(initial={"nombre": curso.nombre, "camada": curso.camada})
+        return render(request, "appcoder/editar_curso.html", {"formulario": formulario, "errores": ""})
+
+
+
+def eliminar_curso(request, id):
+    curso = Curso.objects.get(id=id)
+    curso.delete()
+
+    return redirect("coder-cursos")
+
+
+
 
 
 def creacion_curso(request):
-    #print(request.GET)
-    #print(request.POST)
-    #print(request.method)
+    print(request.GET)
+    print(request.POST)
+    print(request.method)
 
-    if request.method == "POST":
+
+    if request.method == "POST": #verificamos q sea post la validacion
         nombre_curso = request.POST["curso"]
         numero_camada = request.POST["camada"]
 
@@ -33,6 +77,8 @@ def creacion_curso(request):
     return render(request, "appcoder/curso_formulario.html")
 
 
+
+    
     
 def estudiantes(request):
     return render(request, "appcoder/estudiantes.html")
@@ -41,7 +87,7 @@ def creacion_estudiantes(request):
 
     if request.method== "POST":
         formulario = EstudianteFormulario(request.POST)
-        if formulario.is_valid():
+        if formulario.is_valid(): #valida y carga los datos en el cleaned data, por eso tiene que estar si o si
             #accedemos al dic q contien la info del formulario
             data = formulario.cleaned_data
 
