@@ -162,7 +162,7 @@ def entregables(request):
 class EntregablesList(ListView):
 
     model = Entregable
-    template_name = "appcoder/list_entregables"
+    template_name = "coder/entregables/"
 
 class EntregablesDetail(DetailView):
 
