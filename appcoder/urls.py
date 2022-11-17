@@ -15,8 +15,10 @@ urlpatterns = [
 
     path("cursos/buscar/", buscar_curso, name="coder-cursos-buscar"),
     path("cursos/buscar/resultados/", buscar_curso, name="coder-cursos-buscar-resultados"),
-    path("entregables/", entregables, name="coder-entregables"),
-
-    
-]
+    path("entregables/detalle/", EntregablesDetail.as_view(), name="coder-entregables-details"),
+    path("entregables/borrar/<pk>", EntregablesDeleteView.as_view(), name="coder-entregables-delete"),
+    path("entregables/crear/", EntregablesCreateView.as_view(), name="coder-entregables-create"),
+    path("entregables/actualizar/<pk>", EntregablesUpdateView.as_view(), name="coder-entregables-update"),
+    path("entregables/", EntregablesList.as_view(), name="coder-entregables"),
+]   
 

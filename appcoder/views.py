@@ -1,8 +1,10 @@
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from appcoder.models import Curso  #Importamos la clase q vamos a trabar en este form
-from appcoder.models import Profesor, Estudiante
+from appcoder.models import Profesor, Estudiante, Entregable
 from appcoder.forms import ProfesorFormulario, EstudianteFormulario, CursoFormulario
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+
 # Create your views here.
 
 def inicio(request):
@@ -156,3 +158,29 @@ def entregables(request):
   #      cadena_respuesta += curso.nombre + " | "
 
    # return HttpResponse(cadena_respuesta)
+
+class EntregablesList(ListView):
+
+    model = Entregable
+    template_name = "appcoder/list_entregables"
+
+class EntregablesDetail(DetailView):
+
+    model = Entregable
+    template_name = "appcoder/detail_entregables"
+
+class EntregablesCreateView(CreateView):
+
+    model = Entregable
+    success_url = "/coder/entregables/"
+    fields = ["nombre","fecha_de_entrega", "entregado"]
+
+class EntregablesUpdateView(UpdateView):
+
+    model = Entregable
+    success_url = "/coder/entregables/"
+    fields = ["nombre","fecha_de_entrega", "entregado"]
+
+class EntregablesDeleteView(DeleteView):
+    model = Entregable
+    success_url = "coder/entregables/"
