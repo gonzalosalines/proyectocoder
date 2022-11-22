@@ -2,14 +2,21 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from appcoder.models import Curso  #Importamos la clase q vamos a trabar en este form
 from appcoder.models import Profesor, Estudiante, Entregable
-from appcoder.forms import ProfesorFormulario, EstudianteFormulario, CursoFormulario
+from appcoder.forms import ProfesorFormulario, EstudianteFormulario, CursoFormulario, UserRegisterForm
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 
 # Create your views here.
 
+#login
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
+
 def inicio(request):
     return render(request, "appcoder/index.html")
 
+@login_required
 def cursos(request):
 
     errores= ""
@@ -159,7 +166,7 @@ def entregables(request):
 
    # return HttpResponse(cadena_respuesta)
 
-class EntregablesList(ListView):
+class EntregablesList(LoginRequiredMixin, ListView):
 
     model = Entregable
     template_name = "coder/entregables/"
@@ -184,3 +191,44 @@ class EntregablesUpdateView(UpdateView):
 class EntregablesDeleteView(DeleteView):
     model = Entregable
     success_url = "coder/entregables/"
+
+
+#Login view creation
+def iniciar_sesion(request):
+
+    errors = ""
+
+    if request.method == "POST":
+        formulario = AuthenticationForm(request, data=request.POST)
+
+        if formulario.is_valid():
+            data = formulario.cleaned_data
+
+            user = authenticate(username=data["username"], password=data["password"])
+            
+            if user is not None:
+                login(request, user)
+                return redirect("coder-inicio")
+            else:
+                return render(request, "appcoder/login.html", {"form": formulario, "errors": "Credenciales invalidas"})
+        else:
+            return render(request, "appcoder/login.html", {"form": formulario, "errors": formulario.errors})
+    formulario = AuthenticationForm()
+    return render(request, "appcoder/login.html", {"form": formulario, "errors": errors})
+
+
+def registrar_usuario(request):
+
+    if request.method == "POST":
+        formulario = UserRegisterForm(request.POST)
+
+        if formulario.is_valid():
+            
+            formulario.save()
+            return redirect("coder-inicio")
+        else:
+            return render(request, "appcoder/register.html", { "form": formulario, "errors": formulario.errors})
+
+    formulario  = UserRegisterForm()
+    return render(request, "appcoder/register.html", { "form": formulario})
+
