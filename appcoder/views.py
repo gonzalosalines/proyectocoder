@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from appcoder.models import Curso  #Importamos la clase q vamos a trabar en este form
 from appcoder.models import Profesor, Estudiante, Entregable
-from appcoder.forms import ProfesorFormulario, EstudianteFormulario, CursoFormulario, UserRegisterForm
+from appcoder.forms import ProfesorFormulario, EstudianteFormulario, CursoFormulario, UserRegisterForm, UserEditForm
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 
 # Create your views here.
@@ -16,7 +16,7 @@ from django.contrib.auth.decorators import login_required
 def inicio(request):
     return render(request, "appcoder/index.html")
 
-@login_required
+@login_required  #significa q para hacer la fx se necesita estar logueado
 def cursos(request):
 
     errores= ""
@@ -232,3 +232,33 @@ def registrar_usuario(request):
     formulario  = UserRegisterForm()
     return render(request, "appcoder/register.html", { "form": formulario})
 
+@login_required
+def editar_perfil(request):
+
+    usuario = request.user
+
+    if request.method == "POST":
+        # * cargar informacion en el formulario
+        formulario = UserEditForm(request.POST)
+
+        # ! validacion del formulario
+        if formulario.is_valid():
+            data = formulario.cleaned_data
+
+            # * actualizacion del usuario con los datos del formulario
+            usuario.email = data["email"]
+            usuario.first_name = data["first_name"]
+            usuario.last_name = data["last_name"]
+
+            usuario.save()
+            return redirect("coder-inicio")
+        else:
+            return render(request, "appcoder/editar_perfil.html", {"form": formulario, "erros": formulario.errors})
+    else:
+        # * crear formulario vacio
+        formulario = UserEditForm(initial = {"email": usuario.email, "first_name": usuario.first_name, "last_name": usuario.last_name})
+
+    return render(request, "appcoder/editar_perfil.html", {"form": formulario})
+
+@login_required
+def agregar_avatar(request):
